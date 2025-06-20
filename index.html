@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LunaTune - Your Melancholic Soundscape</title>
+    <!-- Tailwind CSS CDN for utility classes -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts - Inter for clean typography -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Custom scrollbar for a melancholic aesthetic */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #2C3A4D; /* Charcoal Gray - Track color */
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #5D7B7A; /* Smoky Teal - Thumb color */
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #B599AB; /* Dusty Rose - Thumb hover color */
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            margin: 0;
+            padding: 0;
+            overflow: hidden; /* Prevent body scroll, content handled by flex */
+            /* Subtle background gradient animation for a more alive feel */
+            background: linear-gradient(135deg, #1A2B3C, #4A2C3F, #1A2B3C);
+            background-size: 400% 400%;
+            animation: gradientShift 15s ease infinite alternate; /* Added alternate */
+        }
+
+        /* Frosted glass effect using backdrop-filter */
+        .glassmorphic {
+            backdrop-filter: blur(10px) brightness(80%);
+            -webkit-backdrop-filter: blur(10px) brightness(80%);
+            background-color: rgba(44, 58, 77, 0.6); /* Charcoal Gray with transparency */
+            border: 1px solid rgba(181, 153, 171, 0.2); /* Dusty Rose light border */
+        }
+
+        /* Simple animation for 'playing' visualizer */
+        @keyframes waveform {
+            0%, 100% { height: 10px; }
+            25% { height: 20px; }
+            50% { height: 5px; }
+            75% { height: 25px; }
+        }
+
+        .playing-indicator span {
+            display: inline-block;
+            width: 3px;
+            height: 10px;
+            background-color: #C5A070; /* Soft Gold */
+            margin: 0 1px;
+            animation: waveform 1.5s ease-in-out infinite alternate; /* Added alternate */
+        }
+
+        /* Keyframes for background gradient animation */
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+    </style>
+</head>
+<body class="bg-[#1A2B3C] text-[#B599AB] flex flex-col h-screen">
+    <!-- Audio Player Element (hidden) -->
+    <audio id="audioPlayer" src="" preload="auto"></audio>
+
+    <!-- Message Box container (hidden by default) -->
+    <div id="messageBox" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 hidden">
+        <div class="bg-[#2C3A4D] p-6 rounded-xl shadow-lg border border-[#5D7B7A] max-w-sm w-full text-center">
+            <p id="messageBoxContent" class="text-lg font-medium text-[#B599AB] mb-4"></p>
+            <button id="messageBoxClose" class="px-6 py-2 bg-[#5D7B7A] text-white rounded-lg hover:bg-[#C5A070] transition duration-300">Tutup</button>
+        </div>
+    </div>
+
+    <!-- Main Application Container -->
+    <div class="flex flex-1 overflow-hidden">
+        <!-- Sidebar Navigation -->
+        <aside class="w-64 bg-[#2C3A4D] p-6 flex flex-col rounded-tr-2xl rounded-br-2xl shadow-xl z-10 transition-all duration-300 ease-in-out md:static fixed inset-y-0 left-0 transform -translate-x-full md:translate-x-0" id="sidebar">
+            <div class="flex items-center justify-between mb-8">
+                <h1 class="text-3xl font-bold text-[#C5A070]">LunaTune</h1>
+                <button id="closeSidebar" class="md:hidden text-[#B599AB] hover:text-white focus:outline-none">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+            <nav class="space-y-4 flex-grow">
+                <a href="#" id="homeLink" class="flex items-center px-4 py-2 rounded-lg text-[#B599AB] hover:bg-[#4A2C3F] hover:text-white transition duration-200">
+                    <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m0 0v10a1 1 0 00-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
+                    Beranda
+                </a>
+                <a href="#" id="exploreLink" class="flex items-center px-4 py-2 rounded-lg text-[#B599AB] hover:bg-[#4A2C3F] hover:text-white transition duration-200">
+                    <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                    Jelajahi
+                </a>
+                <a href="#" id="playlistsLink" class="flex items-center px-4 py-2 rounded-lg text-[#B599AB] hover:bg-[#4A2C3F] hover:text-white transition duration-200">
+                    <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 6l12-3"></path></svg>
+                    Daftar Putar Anda
+                </a>
+                <a href="#" id="artistsLink" class="flex items-center px-4 py-2 rounded-lg text-[#B599AB] hover:bg-[#4A2C3F] hover:text-white transition duration-200">
+                    <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+                    Artis Favorit
+                </a>
+                <button id="moodMixerBtn" class="flex items-center px-4 py-2 rounded-lg text-[#B599AB] hover:bg-[#4A2C3F] hover:text-white transition duration-200 w-full text-left">
+                    <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h1M3 12h1m15.325-3.325l-.707-.707M5.382 5.382l-.707-.707M18.325 18.325l-.707-.707M5.382 18.382l-.707-.707M12 10a2 2 0 100 4 2 2 0 000-4z"></path></svg>
+                    Mood Mixer
+                </button>
+            </nav>
+            <div class="mt-auto pt-6 border-t border-[#4A2C3F]">
+                <a href="#" class="flex items-center px-4 py-2 rounded-lg text-[#B599AB] hover:bg-[#4A2C3F] hover:text-white transition duration-200">
+                    <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                    Pengaturan
+                </a>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="flex-1 p-6 overflow-y-auto relative z-0">
+            <!-- Mobile Menu Button -->
+            <button id="openSidebar" class="md:hidden fixed top-4 left-4 p-2 bg-[#2C3A4D] rounded-full text-[#B599AB] hover:text-white z-20">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+            </button>
+
+            <!-- Search Bar -->
+            <div class="mb-8 flex justify-center mt-10 md:mt-0">
+                <input type="text" id="searchBar" placeholder="Cari lagu, artis, atau playlist..." class="w-full md:w-3/4 p-3 rounded-lg bg-[#2C3A4D] border border-[#5D7B7A] text-white placeholder-[#B599AB] focus:outline-none focus:border-[#C5A070] transition duration-200">
+            </div>
+
+            <h2 class="text-3xl font-bold text-white mb-8">Untuk Anda</h2>
+
+            <!-- Recommended Playlists Section -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 mb-10" id="playlistGrid">
+                <!-- Playlist cards will be inserted here by JavaScript -->
+            </div>
+
+            <h2 class="text-3xl font-bold text-white mb-8" id="currentPlaylistTitle">Daftar Putar Anda</h2>
+
+            <!-- Your Playlists Section (example songs within a playlist) -->
+            <div class="bg-[#2C3A4D] glassmorphic rounded-xl p-6 shadow-lg mb-20">
+                <ul class="space-y-4" id="currentPlaylistSongs">
+                    <!-- Song list will be inserted here by JavaScript -->
+                </ul>
+            </div>
+        </main>
+    </div>
+
+    <!-- Player Bar -->
+    <footer class="bg-[#2C3A4D] glassmorphic p-4 flex items-center justify-between rounded-t-2xl shadow-xl z-20">
+        <div class="flex items-center flex-1 min-w-0">
+            <img id="playerAlbumArt" src="https://placehold.co/60x60/4A2C3F/B599AB?text=AD" alt="Album Art" class="w-16 h-16 rounded-lg mr-4 shadow-md">
+            <div class="flex flex-col min-w-0">
+                <span id="playerSongTitle" class="text-white text-lg font-semibold truncate">Faded Dreams</span>
+                <span id="playerArtistName" class="text-[#B599AB] text-sm truncate">Aurora Fields</span>
+            </div>
+            <div class="ml-4 md:ml-8 hidden md:block">
+                <div class="playing-indicator flex items-end h-8">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+            </div>
+        </div>
+
+        <div class="flex items-center space-x-6 mx-4">
+            <button id="prevBtn" class="text-[#B599AB] hover:text-white transition duration-200">
+                <svg class="w-7 h-7" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M7 6v12l10-6zM17 6v12h2V6h-2z"></path></svg>
+            </button>
+            <button id="playPauseBtn" class="text-white p-3 rounded-full bg-[#C5A070] hover:bg-[#B599AB] transition duration-200 shadow-lg">
+                <!-- Play Icon (default) -->
+                <svg id="playIcon" class="w-8 h-8" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M8 5v14l11-7z"></path></svg>
+                <!-- Pause Icon (hidden by default) -->
+                <svg id="pauseIcon" class="w-8 h-8 hidden" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"></path></svg>
+            </button>
+            <button id="nextBtn" class="text-[#B599AB] hover:text-white transition duration-200">
+                <svg class="w-7 h-7" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M17 6v12l-10-6zM7 6v12H5V6h2z"></path></svg>
+            </button>
+        </div>
+
+        <div class="w-1/4 h-2 bg-[#4A2C3F] rounded-full hidden lg:block">
+            <div id="progressBar" class="h-full bg-[#C5A070] rounded-full" style="width: 30%;"></div>
+        </div>
+    </footer>
+
+    <script>
+        // Data Dummy untuk Lagu dan Daftar Putar
+        const songs = [
+            { id: 1, title: "Faded Dreams", artist: "Aurora Fields", albumArt: "https://placehold.co/100x100/4A2C3F/B599AB?text=AD", duration: "3:45", audioUrl: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" },
+            { id: 2, title: "Silent Whispers", artist: "Echo Bloom", albumArt: "https://placehold.co/100x100/5D7B7A/C5A070?text=SW", duration: "4:10", audioUrl: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3" },
+            { id: 3, title: "Rainy Day Thoughts", artist: "Misty Horizon", albumArt: "https://placehold.co/100x100/1A2B3C/B599AB?text=RT", duration: "3:20", audioUrl: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3" },
+            { id: 4, title: "Lost in Translation", artist: "Velvet Sky", albumArt: "https://placehold.co/100x100/B599AB/1A2C3C?text=LT", duration: "5:00", audioUrl: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3" },
+            { id: 5, title: "Starlight Serenade", artist: "Luna Waves", albumArt: "https://placehold.co/100x100/C5A070/4A2C3F?text=SS", duration: "3:55", audioUrl: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-5.mp3" },
+            { id: 6, title: "Autumn Leaves", artist: "Crimson Bloom", albumArt: "https://placehold.co/100x100/4A2C3F/C5A070?text=AL", duration: "4:30", audioUrl: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-6.mp3" },
+            { id: 7, title: "Distant Echo", artist: "Silent Shores", albumArt: "https://placehold.co/100x100/1A2B3C/5D7B7A?text=DE", duration: "3:15", audioUrl: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-7.mp3" },
+            { id: 8, title: "Velvet Night", artist: "Moonlit Glade", albumArt: "https://placehold.co/100x100/5D7B7A/B599AB?text=VN", duration: "4:05", audioUrl: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-8.mp3" },
+        ];
+
+        const playlists = [
+            { id: 1, name: "Evening Chill", cover: "https://placehold.co/150x150/1A2B3C/B599AB?text=EC", description: "Melodies for winding down.", songs: [songs[0], songs[1], songs[2]] },
+            { id: 2, name: "Rainy Day Moods", cover: "https://placehold.co/150x150/4A2C3F/C5A070?text=RM", description: "Perfect for a contemplative rainy day.", songs: [songs[2], songs[3], songs[4]] },
+            { id: 3, name: "Stardust Lullabies", cover: "https://placehold.co/150x150/5D7B7A/1A2C3C?text=SL", description: "Soothing sounds under the stars.", songs: [songs[4], songs[5], songs[6]] },
+            { id: 4, name: "Gloomy Comfort", cover: "https://placehold.co/150x150/B599AB/4A2C3F?text=GC", description: "Finding solace in the shadows.", songs: [songs[7], songs[0], songs[3]] },
+        ];
+
+        let currentSongIndex = 0;
+        let isPlaying = false;
+        let audioPlayer; // Declare audio player globally
+
+        const playerAlbumArt = document.getElementById('playerAlbumArt');
+        const playerSongTitle = document.getElementById('playerSongTitle');
+        const playerArtistName = document.getElementById('playerArtistName');
+        const playPauseBtn = document.getElementById('playPauseBtn');
+        const playIcon = document.getElementById('playIcon');
+        const pauseIcon = document.getElementById('pauseIcon');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const playlistGrid = document.getElementById('playlistGrid');
+        const currentPlaylistSongs = document.getElementById('currentPlaylistSongs');
+        const currentPlaylistTitle = document.getElementById('currentPlaylistTitle'); // New element
+        const moodMixerBtn = document.getElementById('moodMixerBtn');
+        const messageBox = document.getElementById('messageBox');
+        const messageBoxContent = document.getElementById('messageBoxContent');
+        const messageBoxClose = document.getElementById('messageBoxClose');
+        const searchBar = document.getElementById('searchBar'); // New element
+
+        // Sidebar toggle elements for mobile
+        const sidebar = document.getElementById('sidebar');
+        const openSidebarBtn = document.getElementById('openSidebar');
+        const closeSidebarBtn = document.getElementById('closeSidebar');
+
+        // Navigation links
+        const homeLink = document.getElementById('homeLink');
+        const exploreLink = document.getElementById('exploreLink');
+        const playlistsLink = document.getElementById('playlistsLink');
+        const artistsLink = document.getElementById('artistsLink');
+
+        // --- Fungsi Utilitas ---
+
+        // Menampilkan pesan kustom (menggantikan alert)
+        function showMessage(message) {
+            messageBoxContent.textContent = message;
+            messageBox.classList.remove('hidden');
+        }
+
+        // Menyembunyikan pesan kustom
+        function hideMessageBox() {
+            messageBox.classList.add('hidden');
+        }
+
+        // --- Fungsi Pemutar Musik ---
+
+        // Memuat detail lagu ke bilah pemutar
+        function loadSong(song) {
+            playerAlbumArt.src = song.albumArt;
+            playerAlbumArt.alt = `Album Art of ${song.title}`;
+            playerSongTitle.textContent = song.title;
+            playerArtistName.textContent = song.artist;
+            audioPlayer.src = song.audioUrl; // Set the audio source
+            audioPlayer.load(); // Load the new audio
+            document.getElementById('progressBar').style.width = '0%'; // Reset progress bar
+        }
+
+        // Memutar atau menjeda lagu
+        function playPause() {
+            isPlaying = !isPlaying;
+            if (isPlaying) {
+                audioPlayer.play();
+                playIcon.classList.add('hidden');
+                pauseIcon.classList.remove('hidden');
+                document.querySelector('.playing-indicator').classList.add('active');
+            } else {
+                audioPlayer.pause();
+                playIcon.classList.remove('hidden');
+                pauseIcon.classList.add('hidden');
+                document.querySelector('.playing-indicator').classList.remove('active');
+            }
+            showMessage(isPlaying ? `Memutar: ${songs[currentSongIndex].title}` : `Dijeda: ${songs[currentSongIndex].title}`);
+        }
+
+        // Memutar lagu berikutnya
+        function nextSong() {
+            currentSongIndex = (currentSongIndex + 1) % songs.length;
+            loadSong(songs[currentSongIndex]);
+            if (isPlaying) {
+                audioPlayer.play();
+            }
+            showMessage(`Lagu Berikutnya: ${songs[currentSongIndex].title}`);
+        }
+
+        // Memutar lagu sebelumnya
+        function prevSong() {
+            currentSongIndex = (currentSongIndex - 1 + songs.length) % songs.length;
+            loadSong(songs[currentSongIndex]);
+            if (isPlaying) {
+                audioPlayer.play();
+            }
+            showMessage(`Lagu Sebelumnya: ${songs[currentSongIndex].title}`);
+        }
+
+        // --- Inisialisasi Tampilan ---
+
+        // Merender kartu daftar putar ke dalam grid
+        function renderPlaylists(playlistArray = playlists) {
+            playlistGrid.innerHTML = ''; // Kosongkan grid sebelum menambahkan
+            if (playlistArray.length === 0) {
+                playlistGrid.innerHTML = '<p class="text-center text-[#B599AB] col-span-full">Tidak ada daftar putar yang ditemukan.</p>';
+                return;
+            }
+            playlistArray.forEach(playlist => {
+                const playlistCard = `
+                    <div class="bg-[#2C3A4D] glassmorphic rounded-xl shadow-lg p-4 cursor-pointer transform hover:scale-105 transition duration-300 group" data-playlist-id="${playlist.id}">
+                        <img src="${playlist.cover}" alt="${playlist.name} Cover" class="w-full h-auto rounded-lg mb-4 shadow-md">
+                        <h4 class="text-white text-lg font-semibold mb-1 group-hover:text-[#C5A070] transition duration-200 truncate">${playlist.name}</h4>
+                        <p class="text-[#B599AB] text-sm truncate">${playlist.description}</p>
+                    </div>
+                `;
+                playlistGrid.innerHTML += playlistCard;
+            });
+        }
+
+        // Merender daftar lagu untuk playlist yang sedang ditampilkan
+        function renderSongsForPlaylist(playlist) {
+            currentPlaylistSongs.innerHTML = ''; // Kosongkan daftar sebelum menambahkan
+            currentPlaylistTitle.textContent = playlist.name; // Update title
+            if (playlist.songs.length === 0) {
+                currentPlaylistSongs.innerHTML = '<li class="text-center text-[#B599AB] py-4">Tidak ada lagu dalam daftar putar ini.</li>';
+                return;
+            }
+            playlist.songs.forEach(song => {
+                const songItem = `
+                    <li class="flex items-center justify-between p-3 rounded-lg hover:bg-[#4A2C3F] transition duration-200 cursor-pointer" onclick="selectSong(${song.id})">
+                        <div class="flex items-center">
+                            <img src="${song.albumArt}" alt="${song.title} Art" class="w-10 h-10 rounded-md mr-3">
+                            <div class="flex flex-col">
+                                <span class="text-white font-medium">${song.title}</span>
+                                <span class="text-[#B599AB] text-sm">${song.artist}</span>
+                            </div>
+                        </div>
+                        <span class="text-[#5D7B7A] text-sm">${song.duration}</span>
+                    </li>
+                `;
+                currentPlaylistSongs.innerHTML += songItem;
+            });
+        }
+
+        // Memilih lagu dari daftar putar dan memuatnya ke pemutar
+        function selectSong(songId) {
+            const selectedSong = songs.find(song => song.id === songId);
+            if (selectedSong) {
+                currentSongIndex = songs.findIndex(song => song.id === songId);
+                loadSong(selectedSong); // This loads the new song into the player
+                audioPlayer.play(); // Always play when a new song is explicitly selected
+                isPlaying = true; // Ensure state is playing
+                playIcon.classList.add('hidden');
+                pauseIcon.classList.remove('hidden');
+                document.querySelector('.playing-indicator').classList.add('active');
+                showMessage(`Memutar lagu: ${selectedSong.title}`);
+            }
+        }
+
+        // --- Fungsi Mood Mixer ---
+
+        // Mensimulasikan pembuatan playlist berdasarkan mood dan menampilkannya
+        function generateMoodPlaylist() {
+            const moods = ["Reflektif", "Nostalgia", "Menenangkan", "Mimpi", "Damai"];
+            const selectedMood = moods[Math.floor(Math.random() * moods.length)];
+            const generatedSongs = [];
+            const availableSongs = [...songs]; // Create a mutable copy to pick unique songs
+
+            for (let i = 0; i < 3 && availableSongs.length > 0; i++) {
+                const randomIndex = Math.floor(Math.random() * availableSongs.length);
+                generatedSongs.push(availableSongs.splice(randomIndex, 1)[0]);
+            }
+
+            const generatedPlaylist = {
+                id: Date.now(), // Unique ID for generated playlist
+                name: `Playlist Mood: ${selectedMood}`,
+                description: `Dibuat khusus untuk suasana ${selectedMood} Anda.`,
+                cover: `https://placehold.co/150x150/${Math.floor(Math.random()*16777215).toString(16)}/FFFFFF?text=${selectedMood.substring(0,2).toUpperCase()}`,
+                songs: generatedSongs
+            };
+
+            // Display this generated playlist in the 'Daftar Putar Anda' section
+            renderSongsForPlaylist(generatedPlaylist);
+            showMessage(`Playlist baru "${generatedPlaylist.name}" telah dibuat!`);
+        }
+
+        // --- Fungsi Pencarian ---
+        function filterContent(query) {
+            const lowerCaseQuery = query.toLowerCase();
+
+            // Filter playlists based on name, description, or contained songs
+            const filteredPlaylists = playlists.filter(playlist =>
+                playlist.name.toLowerCase().includes(lowerCaseQuery) ||
+                playlist.description.toLowerCase().includes(lowerCaseQuery) ||
+                playlist.songs.some(song => song.title.toLowerCase().includes(lowerCaseQuery) || song.artist.toLowerCase().includes(lowerCaseQuery))
+            );
+
+            // Filter individual songs based on title or artist
+            const filteredSongs = songs.filter(song =>
+                song.title.toLowerCase().includes(lowerCaseQuery) ||
+                song.artist.toLowerCase().includes(lowerCaseQuery)
+            );
+
+            // Render filtered playlists in the main grid
+            renderPlaylists(filteredPlaylists);
+
+            // Create a combined "Search Results" playlist for the lower section
+            if (lowerCaseQuery.length > 0 && (filteredPlaylists.length > 0 || filteredSongs.length > 0)) {
+                const combinedSearchResults = {
+                    id: 'search-results',
+                    name: `Hasil Pencarian untuk "${query}"`,
+                    description: `Lagu dan daftar putar yang cocok dengan pencarian Anda.`,
+                    songs: Array.from(new Set([...filteredSongs, ...filteredPlaylists.flatMap(p => p.songs)])) // Combine unique songs
+                };
+                renderSongsForPlaylist(combinedSearchResults);
+            } else if (lowerCaseQuery.length > 0) {
+                // If query is not empty but no results found
+                currentPlaylistSongs.innerHTML = '<li class="text-center text-[#B599AB] py-4">Tidak ada lagu atau daftar putar yang ditemukan.</li>';
+                currentPlaylistTitle.textContent = "Hasil Pencarian";
+            } else {
+                // If query is empty, revert to initial state (show first playlist songs)
+                renderSongsForPlaylist(playlists[0]);
+                currentPlaylistTitle.textContent = playlists[0].name;
+            }
+        }
+
+        // --- Event Listener ---
+
+        // Event listener untuk tombol play/pause
+        playPauseBtn.addEventListener('click', playPause);
+        // Event listener untuk tombol lagu sebelumnya
+        prevBtn.addEventListener('click', prevSong);
+        // Event listener untuk tombol lagu berikutnya
+        nextBtn.addEventListener('click', nextSong);
+        // Event listener untuk tombol Mood Mixer
+        moodMixerBtn.addEventListener('click', generateMoodPlaylist);
+        // Event listener untuk tombol tutup kotak pesan
+        messageBoxClose.addEventListener('click', hideMessageBox);
+        // Event listener untuk kolom pencarian
+        searchBar.addEventListener('keyup', (event) => {
+            filterContent(event.target.value);
+        });
+
+        // Sidebar toggle for mobile
+        openSidebarBtn.addEventListener('click', () => {
+            sidebar.classList.remove('-translate-x-full');
+            sidebar.classList.add('translate-x-0');
+        });
+
+        closeSidebarBtn.addEventListener('click', () => {
+            sidebar.classList.remove('translate-x-0');
+            sidebar.classList.add('-translate-x-full');
+        });
+
+        // Event listener for playlist card clicks (delegated)
+        playlistGrid.addEventListener('click', (event) => {
+            const clickedCard = event.target.closest('[data-playlist-id]');
+            if (clickedCard) {
+                const playlistId = parseInt(clickedCard.dataset.playlistId);
+                const selectedPlaylist = playlists.find(p => p.id === playlistId);
+                if (selectedPlaylist) {
+                    renderSongsForPlaylist(selectedPlaylist);
+                    showMessage(`Memuat daftar putar: ${selectedPlaylist.name}`);
+                }
+            }
+        });
+
+        // Navigation links functionality
+        homeLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            searchBar.value = ''; // Clear search
+            filterContent(''); // Reset view to home
+            document.querySelector('main').scrollTo({ top: 0, behavior: 'smooth' });
+            showMessage("Kembali ke Beranda.");
+        });
+
+        exploreLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            searchBar.value = ''; // Clear search
+            filterContent(''); // Show all, allowing search
+            document.querySelector('main').scrollTo({ top: 0, behavior: 'smooth' });
+            showMessage("Temukan musik baru dengan fitur Jelajahi!");
+        });
+
+        playlistsLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            searchBar.value = ''; // Clear search
+            filterContent(''); // Reset view
+            document.querySelector('main').scrollTo({ top: document.querySelector('#currentPlaylistTitle').offsetTop, behavior: 'smooth' });
+            showMessage("Ini adalah daftar putar Anda.");
+        });
+
+        artistsLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            showMessage("Fitur Artis Favorit belum diimplementasikan sepenuhnya. Harap bersabar!");
+        });
+
+
+        // --- Inisialisasi Aplikasi ---
+        document.addEventListener('DOMContentLoaded', () => {
+            audioPlayer = document.getElementById('audioPlayer'); // Initialize audioPlayer here
+            loadSong(songs[currentSongIndex]); // Muat lagu pertama saat aplikasi dimulai
+            renderPlaylists(); // Render daftar putar awal
+            renderSongsForPlaylist(playlists[0]); // Render daftar lagu dari playlist pertama sebagai default
+            currentPlaylistTitle.textContent = playlists[0].name; // Set initial title for song list
+            
+            // Listen for audio time updates to update the progress bar
+            audioPlayer.addEventListener('timeupdate', () => {
+                const progressBar = document.getElementById('progressBar');
+                if (audioPlayer.duration) { // Ensure duration is available
+                    const progress = (audioPlayer.currentTime / audioPlayer.duration) * 100;
+                    progressBar.style.width = `${progress}%`;
+                }
+            });
+
+            // Auto-play next song when current one ends
+            audioPlayer.addEventListener('ended', () => {
+                nextSong();
+            });
+        });
+    </script>
+</body>
+</html>
